@@ -5,10 +5,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.event.demo.Model.Event;
+import tn.esprit.spring.event.demo.Model.User;
+import tn.esprit.spring.event.demo.Repository.FeedBackRepository;
 import tn.esprit.spring.event.demo.Service.EventService;
 
 import java.net.URI;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.event.demo.Model.Event;
+import tn.esprit.spring.event.demo.Model.FeedBack;
+import tn.esprit.spring.event.demo.Model.Role;
+import tn.esprit.spring.event.demo.Model.User;
+import tn.esprit.spring.event.demo.Repository.EventRepository;
+import tn.esprit.spring.event.demo.Repository.UserRepository;
+import tn.esprit.spring.event.demo.Service.FeedBackService;
 
 @RestController
 @RequestMapping("/api/events")
@@ -16,8 +29,17 @@ import java.util.List;
 public class EventController {
 
     private final EventService service;
-    public EventController(EventService service) {
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final FeedBackRepository feedbackRepository;
+
+
+
+    public EventController(EventService service,  UserRepository userRepositoryy,EventRepository eventRepository, FeedBackRepository feedbackRepository ) {
         this.service = service;
+        this.userRepository = userRepositoryy;
+        this.eventRepository = eventRepository;
+        this.feedbackRepository = feedbackRepository;
     }
 
     @GetMapping
@@ -44,28 +66,76 @@ public class EventController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    // ✅ Update event (ADMIN only)
     @PutMapping("/{id}")
-    public Event update(@PathVariable Long id, @Valid @RequestBody Event event) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public Event update(@PathVariable Long id,
+                             @Valid @RequestBody Event event,
+                             Authentication authentication) {
+
+        // 1️⃣ Optional: verify user exists (ADMIN)
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // 2️⃣ Only ADMIN can update, already enforced by @PreAuthorize
         return service.update(id, event);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+
+    // ✅ Delete event (ADMIN only)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long id, Authentication authentication) {
+
+        // 1️⃣ Récupérer l’utilisateur connecté (optionnel, mais utile si tu veux logger ou vérifier)
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // 2️⃣ Supprimer tous les feedbacks liés à cet événement
+        feedbackRepository.deleteByEventId(id);
+
+        // 3️⃣ Supprimer l'événement
+        eventRepository.deleteById(id);
+
+        // 4️⃣ Retourner 204 No Content
         return ResponseEntity.noContent().build();
     }
-    // ✅ Like endpoint
-    @PreAuthorize("hasRole('CLIENT')")
+
+    // ✅ Like an event (CLIENT only)
     @PutMapping("/{id}/like")
-    public Event likeEvent(@PathVariable Long id) {
-        return service.likeEvent(id);
+    @PreAuthorize("hasRole('CLIENT')")
+    public Event likeEvent(@PathVariable Long id,
+                           Authentication authentication) {
+
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        return service.likeEvent(id); // service handles logic
     }
 
-    // ✅ Dislike endpoint
-    @PreAuthorize("hasRole('CLIENT')")
+    // ✅ Dislike an event (CLIENT only)
     @PutMapping("/{id}/dislike")
-    public Event dislikeEvent(@PathVariable Long id) {
+    @PreAuthorize("hasRole('CLIENT')")
+    public Event dislikeEvent(@PathVariable Long id,
+                              Authentication authentication) {
+
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
         return service.dislikeEvent(id);
+    }
+
+    @GetMapping("/Same/{location}")  // ✅ Plus clair
+    @PreAuthorize("hasAnyRole('CLIENT','ADMIN')")
+    public List<Event> getEventsByLocation(@PathVariable String location,
+                                           Authentication authentication) {
+        String email = authentication.getName();
+        userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        return service.getEventsByLocation(location);
     }
 }

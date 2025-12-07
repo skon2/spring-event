@@ -68,6 +68,8 @@ public class EventService {
         }
         return repo.save(event);
     }
-
+    public List<Event> getEventsByLocation(String location) {
+        return repo.findByLocation(location);
+    }
 
 }

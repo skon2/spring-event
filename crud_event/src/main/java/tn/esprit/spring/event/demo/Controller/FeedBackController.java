@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.event.demo.Model.Event;
 import tn.esprit.spring.event.demo.Model.FeedBack;
 import tn.esprit.spring.event.demo.Model.Role;
 import tn.esprit.spring.event.demo.Model.User;
+import tn.esprit.spring.event.demo.Repository.EventRepository;
 import tn.esprit.spring.event.demo.Repository.UserRepository;
 import tn.esprit.spring.event.demo.Service.FeedBackService;
 
@@ -20,6 +22,7 @@ public class FeedBackController {
 
     private final FeedBackService feedbackService;
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
 
     @PostMapping("/event/{eventId}")
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
@@ -106,13 +109,7 @@ public class FeedBackController {
         return feedbackService.getAllFeedback();
     }
 
-    // ➤ Récupérer les feedbacks d'un événement
-    @GetMapping("/event/{eventId}")
-    @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
 
-    public List<FeedBack> getFeedbackByEvent(@PathVariable Long eventId) {
-        return feedbackService.getFeedbackByEvent(eventId);
-    }
 
     // ➤ Récupérer tous les feedbacks user connecté
     @GetMapping("/my")
@@ -154,6 +151,25 @@ public class FeedBackController {
         // 4️⃣ OK → retourner
         return feedback;
     }
+
+    @GetMapping("/event/{eventId}")
+    @PreAuthorize("hasAnyRole('CLIENT','ADMIN')")
+    public List<FeedBack> getFeedbacksByEvent(@PathVariable Long eventId,
+                                              Authentication authentication) {
+
+        // 1️⃣ Récupérer l'email depuis le token JWT
+        String email = authentication.getName();
+        // 2️⃣ Vérifier l'existence de l'événement
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Événement non trouvé"));
+
+        // 3️⃣ Retourner TOUS les feedbacks du même événement
+        return feedbackService.getFeedbackByEvent(eventId);
+    }
+
+
+
+
 
 
 }

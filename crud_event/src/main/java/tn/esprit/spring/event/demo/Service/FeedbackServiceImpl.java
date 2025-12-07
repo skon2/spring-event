@@ -76,4 +76,14 @@ public class FeedbackServiceImpl implements FeedBackService {
     }
 
 
+
+    @Override
+    public List<FeedBack> findByEventId(Long eventId) {
+        // Vérifier que l'événement existe
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Événement non trouvé"));
+
+        return feedbackRepository.findByEventId(eventId);    }
+
+
 }

@@ -1,5 +1,6 @@
 package tn.esprit.spring.event.demo.Service;
 
+import tn.esprit.spring.event.demo.Model.Event;
 import tn.esprit.spring.event.demo.Model.FeedBack;
 import tn.esprit.spring.event.demo.Model.User;
 
@@ -21,5 +22,8 @@ public interface FeedBackService {
 
     List<FeedBack> getFeedbackByUser(User user);
     FeedBack getFeedbackById(Long feedbackId);
+    List<FeedBack> findByEventId(Long eventId);
+
+
 
 }

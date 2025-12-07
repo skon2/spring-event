@@ -32,11 +32,11 @@ public class AuthenticationController {
     // -------------------------
     // GET ALL EVENTS
     // -------------------------
-    @GetMapping("/events")
-    public List<Event> getAllEvents() {
+
+    @GetMapping
+    public List<Event> all() {
         return eventService.findAll();
     }
-
     // -------------------------
     // REGISTER
     // -------------------------

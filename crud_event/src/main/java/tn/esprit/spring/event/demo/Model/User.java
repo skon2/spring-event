@@ -3,6 +3,7 @@ package tn.esprit.spring.event.demo.Model;
 import java.util.Collection;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 public class User implements UserDetails{
 
     @Id
@@ -46,6 +49,7 @@ public class User implements UserDetails{
     @CollectionTable(name = "user_phones", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "phone")
     private List<String> phones;
+
 
     // Getters et Setters
     public Long getId() {
