@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark theme — deep navy/charcoal inspired by design brief */
+    --background: 222 20% 7%;
+    --foreground: 210 17% 94%;
+
+    --card: 222 18% 11%;
+    --card-foreground: 210 17% 94%;
+
+    --popover: 222 18% 11%;
+    --popover-foreground: 210 17% 94%;
+
+    /* Teal/cyan accent as primary brand color */
+    --primary: 173 80% 45%;
+    --primary-foreground: 222 20% 7%;
+
+    --secondary: 222 16% 18%;
+    --secondary-foreground: 210 17% 94%;
+
+    --muted: 222 16% 15%;
+    --muted-foreground: 215 14% 55%;
+
+    --accent: 173 80% 45%;
+    --accent-foreground: 222 20% 7%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 17% 94%;
+
+    --border: 222 16% 18%;
+    --input: 222 16% 18%;
+    --ring: 173 80% 45%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
